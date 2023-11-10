@@ -1,0 +1,268 @@
+18:06:17 **** Incremental Build of configuration Debug for project HMI_ECU ****
+make all 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 HMI_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   18862 bytes (57.6% Full)
+(.text + .data + .bootloader)
+
+Data:        171 bytes (8.3% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:12:55 **** Build of configuration Debug for project Control_ECU ****
+make all 
+Building file: ../mcal/uart/uart.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/uart/uart.d" -MT"mcal/uart/uart.o" -c -o "mcal/uart/uart.o" "../mcal/uart/uart.c"
+Finished building: ../mcal/uart/uart.c
+ 
+Building file: ../mcal/twi/twi.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/twi/twi.d" -MT"mcal/twi/twi.o" -c -o "mcal/twi/twi.o" "../mcal/twi/twi.c"
+Finished building: ../mcal/twi/twi.c
+ 
+Building file: ../mcal/timer1/timer1.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/timer1/timer1.d" -MT"mcal/timer1/timer1.o" -c -o "mcal/timer1/timer1.o" "../mcal/timer1/timer1.c"
+../mcal/timer1/timer1.c: In function 'Timer1_setCallBack':
+../mcal/timer1/timer1.c:85: warning: function return types not compatible due to 'volatile'
+Finished building: ../mcal/timer1/timer1.c
+ 
+Building file: ../mcal/pwm/pwm.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/pwm/pwm.d" -MT"mcal/pwm/pwm.o" -c -o "mcal/pwm/pwm.o" "../mcal/pwm/pwm.c"
+Finished building: ../mcal/pwm/pwm.c
+ 
+Building file: ../mcal/gpio/gpio.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/gpio/gpio.d" -MT"mcal/gpio/gpio.o" -c -o "mcal/gpio/gpio.o" "../mcal/gpio/gpio.c"
+Finished building: ../mcal/gpio/gpio.c
+ 
+Building file: ../mcal/global_interput/global_interput.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/global_interput/global_interput.d" -MT"mcal/global_interput/global_interput.o" -c -o "mcal/global_interput/global_interput.o" "../mcal/global_interput/global_interput.c"
+Finished building: ../mcal/global_interput/global_interput.c
+ 
+Building file: ../hal/eeprom/external_eeprom.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"hal/eeprom/external_eeprom.d" -MT"hal/eeprom/external_eeprom.o" -c -o "hal/eeprom/external_eeprom.o" "../hal/eeprom/external_eeprom.c"
+Finished building: ../hal/eeprom/external_eeprom.c
+ 
+Building file: ../hal/dcmotor/dc_motor.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"hal/dcmotor/dc_motor.d" -MT"hal/dcmotor/dc_motor.o" -c -o "hal/dcmotor/dc_motor.o" "../hal/dcmotor/dc_motor.c"
+Finished building: ../hal/dcmotor/dc_motor.c
+ 
+Building file: ../hal/buzzer/buzzer.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"hal/buzzer/buzzer.d" -MT"hal/buzzer/buzzer.o" -c -o "hal/buzzer/buzzer.o" "../hal/buzzer/buzzer.c"
+In file included from ../hal/buzzer/buzzer.c:11:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../hal/buzzer/buzzer.c
+ 
+Building file: ../app/Control_ECU.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"app/Control_ECU.d" -MT"app/Control_ECU.o" -c -o "app/Control_ECU.o" "../app/Control_ECU.c"
+In file included from ../app/Control_ECU.c:9:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../app/Control_ECU.c
+ 
+Building target: Control_ECU.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Control_ECU.map -mmcu=atmega32 -o "Control_ECU.elf"  ./mcal/uart/uart.o  ./mcal/twi/twi.o  ./mcal/timer1/timer1.o  ./mcal/pwm/pwm.o  ./mcal/gpio/gpio.o  ./mcal/global_interput/global_interput.o  ./hal/eeprom/external_eeprom.o  ./hal/dcmotor/dc_motor.o  ./hal/buzzer/buzzer.o  ./app/Control_ECU.o   
+Finished building target: Control_ECU.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Control_ECU.elf  >"Control_ECU.lss"
+Finished building: Control_ECU.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 Control_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   15142 bytes (46.2% Full)
+(.text + .data + .bootloader)
+
+Data:        291 bytes (14.2% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:12:59 **** Build of configuration Debug for project HMI_ECU ****
+make all 
+Building file: ../mcal/uart/uart.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/uart/uart.d" -MT"mcal/uart/uart.o" -c -o "mcal/uart/uart.o" "../mcal/uart/uart.c"
+Finished building: ../mcal/uart/uart.c
+ 
+Building file: ../mcal/timer1/timer1.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/timer1/timer1.d" -MT"mcal/timer1/timer1.o" -c -o "mcal/timer1/timer1.o" "../mcal/timer1/timer1.c"
+../mcal/timer1/timer1.c: In function 'Timer1_setCallBack':
+../mcal/timer1/timer1.c:145: warning: function return types not compatible due to 'volatile'
+Finished building: ../mcal/timer1/timer1.c
+ 
+Building file: ../mcal/gpio/gpio.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/gpio/gpio.d" -MT"mcal/gpio/gpio.o" -c -o "mcal/gpio/gpio.o" "../mcal/gpio/gpio.c"
+Finished building: ../mcal/gpio/gpio.c
+ 
+Building file: ../mcal/global_interput/global_interput.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/global_interput/global_interput.d" -MT"mcal/global_interput/global_interput.o" -c -o "mcal/global_interput/global_interput.o" "../mcal/global_interput/global_interput.c"
+Finished building: ../mcal/global_interput/global_interput.c
+ 
+Building file: ../hal/lcd/lcd.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"hal/lcd/lcd.d" -MT"hal/lcd/lcd.o" -c -o "hal/lcd/lcd.o" "../hal/lcd/lcd.c"
+In file included from ../hal/lcd/lcd.c:12:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+../hal/lcd/lcd.c: In function 'LCD_intgerToString':
+../hal/lcd/lcd.c:199: warning: implicit declaration of function 'itoa'
+../hal/lcd/lcd.c: In function 'LCD_floatToString':
+../hal/lcd/lcd.c:210: warning: implicit declaration of function 'dtostrf'
+Finished building: ../hal/lcd/lcd.c
+ 
+Building file: ../hal/keypad/keypad.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"hal/keypad/keypad.d" -MT"hal/keypad/keypad.o" -c -o "hal/keypad/keypad.o" "../hal/keypad/keypad.c"
+In file included from ../hal/keypad/keypad.c:11:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../hal/keypad/keypad.c
+ 
+Building file: ../app/HMI_ECU.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"app/HMI_ECU.d" -MT"app/HMI_ECU.o" -c -o "app/HMI_ECU.o" "../app/HMI_ECU.c"
+In file included from ../app/HMI_ECU.c:9:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../app/HMI_ECU.c
+ 
+Building target: HMI_ECU.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,HMI_ECU.map -mmcu=atmega32 -o "HMI_ECU.elf"  ./mcal/uart/uart.o  ./mcal/timer1/timer1.o  ./mcal/gpio/gpio.o  ./mcal/global_interput/global_interput.o  ./hal/lcd/lcd.o  ./hal/keypad/keypad.o  ./app/HMI_ECU.o   
+Finished building target: HMI_ECU.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S HMI_ECU.elf  >"HMI_ECU.lss"
+Finished building: HMI_ECU.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 HMI_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   18862 bytes (57.6% Full)
+(.text + .data + .bootloader)
+
+Data:        171 bytes (8.3% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:14:25 **** Incremental Build of configuration Debug for project Control_ECU ****
+make all 
+Building file: ../mcal/pwm/pwm.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/pwm/pwm.d" -MT"mcal/pwm/pwm.o" -c -o "mcal/pwm/pwm.o" "../mcal/pwm/pwm.c"
+Finished building: ../mcal/pwm/pwm.c
+ 
+Building target: Control_ECU.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Control_ECU.map -mmcu=atmega32 -o "Control_ECU.elf"  ./mcal/uart/uart.o  ./mcal/twi/twi.o  ./mcal/timer1/timer1.o  ./mcal/pwm/pwm.o  ./mcal/gpio/gpio.o  ./mcal/global_interput/global_interput.o  ./hal/eeprom/external_eeprom.o  ./hal/dcmotor/dc_motor.o  ./hal/buzzer/buzzer.o  ./app/Control_ECU.o   
+Finished building target: Control_ECU.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Control_ECU.elf  >"Control_ECU.lss"
+Finished building: Control_ECU.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 Control_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   15142 bytes (46.2% Full)
+(.text + .data + .bootloader)
+
+Data:        291 bytes (14.2% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:14:26 **** Incremental Build of configuration Debug for project HMI_ECU ****
+make all 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 HMI_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   18862 bytes (57.6% Full)
+(.text + .data + .bootloader)
+
+Data:        171 bytes (8.3% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:15:46 **** Incremental Build of configuration Debug for project Control_ECU ****
+make all 
+Building file: ../mcal/pwm/pwm.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/pwm/pwm.d" -MT"mcal/pwm/pwm.o" -c -o "mcal/pwm/pwm.o" "../mcal/pwm/pwm.c"
+Finished building: ../mcal/pwm/pwm.c
+ 
+Building target: Control_ECU.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Control_ECU.map -mmcu=atmega32 -o "Control_ECU.elf"  ./mcal/uart/uart.o  ./mcal/twi/twi.o  ./mcal/timer1/timer1.o  ./mcal/pwm/pwm.o  ./mcal/gpio/gpio.o  ./mcal/global_interput/global_interput.o  ./hal/eeprom/external_eeprom.o  ./hal/dcmotor/dc_motor.o  ./hal/buzzer/buzzer.o  ./app/Control_ECU.o   
+Finished building target: Control_ECU.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Control_ECU.elf  >"Control_ECU.lss"
+Finished building: Control_ECU.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 Control_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   15142 bytes (46.2% Full)
+(.text + .data + .bootloader)
+
+Data:        291 bytes (14.2% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+15:15:47 **** Incremental Build of configuration Debug for project HMI_ECU ****
+make all 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 HMI_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   18862 bytes (57.6% Full)
+(.text + .data + .bootloader)
+
+Data:        171 bytes (8.3% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 

@@ -1,0 +1,151 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : twi.c
+ Data      : Oct 22, 2023
+ Time      : 8:57:19 PM
+ ===================================================
+ */
+#include "twi.h"
+#include "../../lib/common_macros.h"
+#include "twi_Reg.h"
+void TWI_init(const TWI_ConfigType *Config_Ptr) {
+	/*Fscl = Fcpu/16+2*TWBR*4^TWPS
+	 *TWBR = (((Fscl/Fcpu)-16)/(2*Prescaler))*/
+	/*calc the value should put in Twi*/
+	TWBR = ((((F_CPU) / (Config_Ptr->bit_rate)) - 16)
+			/ (2 * Config_Ptr->Prescaler));
+
+	switch (Config_Ptr->Prescaler) {
+	case 1:
+		TWSR = 0x00;
+
+		break;
+	case 4:
+		TWSR = 0x01;
+
+		break;
+	case 16:
+		TWSR = 0x02;
+
+		break;
+	case 64:
+		TWSR = 0x03;
+
+		break;
+	default:
+		break;
+	}
+	/* Two Wire Bus address my address if any master device want to call me: 0x1 (used in case this MC is a slave device)
+	 General Call Recognition: Off */
+	TWAR.Bits.TWA0_6 = Config_Ptr->address; // my address = 0x01 :)
+
+	TWCR.Bits.TWEN = 1;/* enable TWI */
+
+}
+
+void TWI_start(void) {
+	/*
+	 * Clear the TWINT flag before sending the start bit TWINT=1
+	 * send the start bit by TWSTA=1
+	 * Enable TWI Module TWEN=1
+	 */
+	/*TWCR.Byte=0xA4;*/
+	TWCR.Bits.TWSTA = 1;
+	TWCR.Bits.TWEA = 0;
+	TWCR.Bits.TWSTO = 0;
+	TWCR.Bits.TWIE = 0;
+	TWCR.Bits.TWWC = 0;
+	TWCR.Bits.TWINT = 1;
+	/*TWCR.Bits.TWEN = 1;*/
+
+	/* Wait for TWINT flag set in TWCR Register (start bit is send successfully) */
+	while (TWCR.Bits.TWINT == 0)
+		;
+
+}
+
+void TWI_stop(void) {
+	/*
+	 * Clear the TWINT flag before sending the stop bit TWINT=1
+	 * send the stop bit by TWSTO=1
+	 * Enable TWI Module TWEN=1
+	 */
+	//TWCR.Byte = 0x94;
+	TWCR.Bits.TWSTA = 0;
+	TWCR.Bits.TWEA = 0;
+	TWCR.Bits.TWSTO = 1;
+	TWCR.Bits.TWIE = 0;
+	TWCR.Bits.TWWC = 0;
+	TWCR.Bits.TWINT = 1;
+	//TWCR.Bits.TWEN = 1;
+
+}
+
+void TWI_writeByte(uint8 data) {
+	/* Put data On TWI data Register */
+	TWDR = data;
+	/*
+	 * Clear the TWINT flag before sending the data TWINT=1
+	 * Enable TWI Module TWEN=1
+	 */
+	//TWCR.Byte = 0x84;
+	TWCR.Bits.TWSTA = 0;
+	TWCR.Bits.TWEA = 0;
+	TWCR.Bits.TWSTO = 0;
+	TWCR.Bits.TWIE = 0;
+	TWCR.Bits.TWWC = 0;
+	TWCR.Bits.TWINT = 1;
+	//TWCR.Bits.TWEN = 1;
+	/* Wait for TWINT flag set in TWCR Register(data is send successfully) */
+	while (TWCR.Bits.TWINT == 0)
+		;
+}
+
+uint8 TWI_readByteWithACK(void) {
+	/*
+	 * Clear the TWINT flag before reading the data TWINT=1
+	 * Enable sending ACK after reading or receiving data TWEA=1
+	 * Enable TWI Module TWEN=1
+	 */
+	//TWCR.Byte = 0xC4;
+	TWCR.Bits.TWSTA = 0;
+	TWCR.Bits.TWEA = 1;
+	TWCR.Bits.TWSTO = 0;
+	TWCR.Bits.TWIE = 0;
+	TWCR.Bits.TWWC = 0;
+	TWCR.Bits.TWINT = 1;
+	//TWCR.Bits.TWEN = 1;
+	/* Wait for TWINT flag set in TWCR Register (data received successfully) */
+	while (TWCR.Bits.TWINT == 0)
+		;
+	/* Read Data */
+	return TWDR;
+}
+
+uint8 TWI_readByteWithNACK(void) {
+	/*
+	 * Clear the TWINT flag before reading the data TWINT=1
+	 * Enable TWI Module TWEN=1
+	 */
+	//TWCR.Byte = 0x84;
+	TWCR.Bits.TWSTA = 0;
+	TWCR.Bits.TWEA = 0;
+	TWCR.Bits.TWSTO = 0;
+	TWCR.Bits.TWIE = 0;
+	TWCR.Bits.TWWC = 0;
+	TWCR.Bits.TWINT = 1;
+	//TWCR.Bits.TWEN = 1;
+	/* Wait for TWINT flag set in TWCR Register (data received successfully) */
+	while (TWCR.Bits.TWINT == 0)
+		;
+	/* Read Data */
+	return TWDR;
+}
+
+uint8 TWI_getStatus(void) {
+	uint8 status;
+	/* masking to eliminate first 3 bits and get the last 5 bits (status bits) */
+	status = TWSR & 0xF8;
+	return status;
+}

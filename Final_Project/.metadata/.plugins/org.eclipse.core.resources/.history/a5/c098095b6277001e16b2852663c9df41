@@ -1,0 +1,361 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : HMI_ECU.c
+ Data      : Oct 25, 2023
+ Time      : 6:58:50 PM
+ ===================================================
+ */
+#include <util/delay.h>/*to make delay*/
+
+#include "../hal/keypad/keypad.h"/*to interface with user*/
+#include "../hal/lcd/lcd.h"/*to interface with user*/
+#include "../mcal/global_interput/global_interput.h"/*to enable global interput*/
+#include "../mcal/timer1/timer1.h"/*to make delay using timer*/
+#include "../mcal/uart/uart.h"/*to comncate with anthor mc*/
+/*******************************************************************************
+ *                      Definitions to control while(1)                        *
+ *******************************************************************************/
+#define CREATE_PASS 0
+#define RECREATE_PASS 1
+#define CHECK_PASS 2
+#define MOTOR_STATE 3
+#define CHANGE_PASS 4
+#define MAIN 5
+#define CONFIRMA_PASS 6
+/*******************************************************************************
+ *                      Definitions to control UART                           *
+ *******************************************************************************/
+#define UART_CREATE_PASS_READY 10
+#define UART_CREATE_PASS_YES_READY 11
+#define UART_RECREATE_PASS_READY 12
+#define UART_RECREATE_PASS_YES_READY 13
+#define UART_PASS_MATCH 14
+#define UART_PASS_MISMATCH 15
+#define UART_MOTOR_READY 16
+#define UART_MOTOR_YES_READY 17
+#define UART_CONFIRMA_PASS_READY 18
+#define UART_CONFIRMA_PASS_YES_READY 19
+#define UART_CONFIRMA_PASS_FINSH 22
+#define UART_MAIN_READY 20
+#define UART_MAIN_YES_READY 21
+#define UART_CHECK_PASS_READY 30
+#define UART_CHECK_PASS_YES_READY 31
+#define UART_CHANGE_PASS_READY 32
+#define UART_CHANGE_PASS_YES_READY 33
+/*******************************************************************************
+ *                               Global Varibales                              *
+ *******************************************************************************/
+uint8 g_sec = 0, g_try = 0, g_main = 0;
+/*******************************************************************************
+ *                              Functions Prototypes                           *
+ *******************************************************************************/
+void count_Seconds(void);
+void Delay_By_Uing_Timer1_Using_interput(uint16 SecDelay);
+/*******************************************************************************
+ *                                    main                                     *
+ *******************************************************************************/
+int main(void) {
+	/*to Setting UART*/
+	UART_ConfigType uart_Config =
+			{ bits_8, Parity_Disabled, one_stop_bit, 9600 };
+	/*
+	 * temp_keypad-> get values from keypad
+	 * password_counter_digit-> counter for loops
+	 * state-> to control program
+	 */
+	uint8 temp_keypad = 0, password_counter_digit = 0, state = CREATE_PASS;
+	uint8 password[5] = { 0, 0 };/*to save pass on it*/
+	global_interput_int();
+	LCD_init();
+	UART_init(&uart_Config);
+	UART_sendByte(READY);
+	if (UART_recieveByte() == IAM_READY) {/*to make sure that ready to send and recieve*/
+		while (1) {
+			/*******************************************************************************
+			 *                                    CREATE_PASS                              *
+			 *******************************************************************************/
+			while (state == CREATE_PASS) {
+				uint8 local_state = 0;/*to receive uart state */
+				g_try = 0;/*to clear try*/
+				LCD_clearScreen();
+				LCD_displayStringRowColumn(0, 0, "Plz enter pass: ");
+				LCD_moveCursor(1, 0);
+				UART_sendByte(UART_CREATE_PASS_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_CREATE_PASS_YES_READY) {
+					/*take password and save it on arry*/
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							) {
+						temp_keypad = KEYPAD_getPressedKey();
+						_delay_ms(600);
+						if ((temp_keypad <= 9) && (temp_keypad >= 0)) {
+							//LCD_intgerToString(temp_keypad);
+							LCD_displayCharacter('*');
+							password[password_counter_digit] = temp_keypad;
+							password_counter_digit++;
+						}
+					}
+					while (KEYPAD_getPressedKey() != 'E')
+						; /*polling waiting Enter*/
+					/*sending data*/
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							password_counter_digit++) {
+						UART_sendByte(password[password_counter_digit]);
+						_delay_ms(10);
+					}
+					state = RECREATE_PASS;/*not problem occurred and go to next state*/
+					break;
+				} else {
+					state = CREATE_PASS;/*a problem occurred and retry state*/
+				}
+			}
+			/*******************************************************************************
+			 *                                    RECREATE_PASS                            *
+			 *******************************************************************************/
+			while (state == RECREATE_PASS) {
+				uint8 local_state = 0;/*to receive uart state */
+				LCD_displayStringRowColumn(0, 0, "Plz re-enter the ");
+				LCD_displayStringRowColumn(1, 0, "same pass:");
+				UART_sendByte(UART_RECREATE_PASS_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_RECREATE_PASS_YES_READY) {
+					/*take password and save it on arry*/
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							) {
+						temp_keypad = KEYPAD_getPressedKey();
+						_delay_ms(600);
+						if ((temp_keypad <= 9) && (temp_keypad >= 0)) {
+							//LCD_intgerToString(temp_keypad);
+							LCD_displayCharacter('*');
+							password[password_counter_digit] = temp_keypad;
+							password_counter_digit++;
+						}
+					}
+					while (KEYPAD_getPressedKey() != 'E')
+						;/*polling waiting Enter*/
+					/*sending data*/
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							password_counter_digit++) {
+						UART_sendByte(password[password_counter_digit]);
+						_delay_ms(10);
+					}
+					state = CONFIRMA_PASS;/*not problem occurred and go to next state*/
+					break;
+				} else {
+					state = RECREATE_PASS;/*a problem occurred and retry state*/
+				}
+			}
+			/*******************************************************************************
+			 *                                    CONFIRMA_PASS                           *
+			 *******************************************************************************/
+			while (state == CONFIRMA_PASS) {
+				uint8 local_state = 0;
+				uint8 local_state2 = 0;
+				UART_sendByte(UART_CONFIRMA_PASS_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_CONFIRMA_PASS_YES_READY) {
+					local_state2 = UART_recieveByte();
+					if (local_state2 == UART_CONFIRMA_PASS_FINSH) {
+						state = MAIN;/*pass is confirm and go to main*/
+						break;
+					} else if (local_state2 == UART_PASS_MISMATCH) {
+						state = CREATE_PASS;/*pass not matched*/
+					}
+				}
+			}
+			/*******************************************************************************
+			 *                                    MAIN_State                               *
+			 *******************************************************************************/
+			while (state == MAIN) {
+				uint8 local_state = 0;
+				g_try = 0;
+				LCD_clearScreen();
+				UART_sendByte(UART_MAIN_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_MAIN_YES_READY) {
+					LCD_displayStringRowColumn(0, 0, "+ : Open Door ");
+					LCD_displayStringRowColumn(1, 0, "- : Change pass ");
+					while (1) {
+						temp_keypad = KEYPAD_getPressedKey();
+						_delay_ms(600);
+						if (temp_keypad == '-' || temp_keypad == '+') {
+							break;
+						}
+					}
+					if (temp_keypad == '+') {
+						uint8 local_state2 = 0;
+						UART_sendByte(UART_MOTOR_READY);
+						local_state2 = UART_recieveByte();
+
+						if (local_state2 == UART_MOTOR_YES_READY) {
+							LCD_clearScreen();
+							g_main = MOTOR_STATE;/*to get it after check pass*/
+							state = CHECK_PASS;/*to check pass*/
+							break;
+						} else {
+							state = MAIN;
+							break;
+						}
+
+					} else if (temp_keypad == '-') {
+						uint8 local_state2 = 0;
+						UART_sendByte(UART_CHECK_PASS_READY);
+						local_state2 = UART_recieveByte();
+						if (local_state2 == UART_CHECK_PASS_YES_READY) {
+							LCD_clearScreen();
+							g_main = CHANGE_PASS;/*to get it after check pass*/
+							state = CHECK_PASS;/*to check pass*/
+							break;
+						} else {
+							state = MAIN;/*a problem occurred and retry state*/
+							break;
+						}
+
+					} else {
+						state = MAIN;
+						break;
+					}
+				}
+			}
+			/*******************************************************************************
+			 *                                    MOTOR_STATE                              *
+			 *******************************************************************************/
+			while (state == MOTOR_STATE) {
+				uint8 local_state = 0;
+				UART_sendByte(UART_MOTOR_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_MOTOR_YES_READY) {
+					LCD_clearScreen();
+					LCD_displayStringRowColumn(0, 0, "Door is ");
+					LCD_displayStringRowColumn(1, 0, "Unlocking");
+					/*rotates motor for 15-seconds CW
+					 + hold the motor for 3-seconds.*/
+					Delay_By_Uing_Timer1_Using_interput(18);
+					LCD_displayStringRowColumn(0, 0, "Door is locking");
+					/*rotates motor for 15-seconds A-CW*/
+					Delay_By_Uing_Timer1_Using_interput(15);
+					state = MAIN;/*back to main after finsh its job*/
+					break;
+				} else {
+					state = MOTOR_STATE;/*a problem occurred and retry state*/
+				}
+			}
+			/*******************************************************************************
+			 *                                    CHECK_PASS                              *
+			 *******************************************************************************/
+			while (state == CHECK_PASS) {
+				uint8 local_state = 0, local_state2 = 0;
+				UART_sendByte(UART_CHECK_PASS_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_CHECK_PASS_YES_READY) {
+					if (g_try < 2) {
+						LCD_clearScreen();
+						LCD_displayStringRowColumn(0, 0, "Plz enter pass: ");
+						LCD_moveCursor(1, 0);
+					} else {
+						LCD_clearScreen();
+						LCD_displayStringRowColumn(0, 0, "last time pass: ");
+						LCD_moveCursor(1, 0);
+					}
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							) {
+						temp_keypad = KEYPAD_getPressedKey();
+						_delay_ms(600);
+						if ((temp_keypad <= 9) && (temp_keypad >= 0)) {
+							//LCD_intgerToString(temp_keypad);
+							LCD_displayCharacter('*');
+							password[password_counter_digit] = temp_keypad;
+							password_counter_digit++;
+						}
+					}
+					while (KEYPAD_getPressedKey() != 'E')
+						;
+					for (password_counter_digit = 0; password_counter_digit < 5;
+							password_counter_digit++) {
+						UART_sendByte(password[password_counter_digit]);
+						_delay_ms(10);
+					}
+					local_state2 = UART_recieveByte();
+					if (local_state2 == UART_PASS_MATCH) {
+						state = g_main;/*it function after check pass*/
+						break;
+					} else {
+						LCD_clearScreen();
+						LCD_displayString("WRONG PASS");
+						_delay_ms(500);
+						LCD_clearScreen();
+						g_try++;/*that the three try for wrong pass*/
+						/*to checking how many times that the pass enter
+						 *and if enter more than 3 times breaking loop and
+						 *stop prog for min and go to main*/
+						if (g_try == 3) {
+							LCD_clearScreen();
+							LCD_moveCursor(0, 7);
+							LCD_displayString("ERROR");
+							Delay_By_Uing_Timer1_Using_interput(60);/*waiting for min*/
+							state = MAIN;
+							break;
+						}
+						state = CHECK_PASS;/*a problem occurred and retry state*/
+					}
+
+				} else {
+					state = CHECK_PASS;/*a problem occurred and retry state*/
+				}
+			}
+			/*******************************************************************************
+			 *                                    CHANGE_PASS                             *
+			 *******************************************************************************/
+			while (state == CHANGE_PASS) {
+				uint8 local_state = 0;
+				UART_sendByte(UART_CHANGE_PASS_READY);
+				local_state = UART_recieveByte();
+				if (local_state == UART_CHANGE_PASS_YES_READY) {
+					state = CREATE_PASS;/*go to new password*/
+					LCD_clearScreen();
+					break;
+				} else {
+					state = CHANGE_PASS;/*a problem occurred and retry state*/
+				}
+			}
+
+//while(1)
+		}
+		//if
+	}
+//main
+}
+/*******************************************************************************
+ *                      Functions Definitions                                  *
+ *******************************************************************************/
+/*func to count sec by callback*/
+void count_Seconds(void) {
+	g_sec = g_sec + 1;
+}
+/*using timer 1 as delaying*/
+void Delay_By_Uing_Timer1_Using_interput(uint16 SecDelay) {
+	Timer1_setCallBack(count_Seconds);
+
+	/*Ttimer=256/8*1000000 = .000032sec
+	 * ocra1 = 1sec/.000032 = 31250*/
+	Timer1_ConfigType Local_timer1_Config = { 0, 31250, Timer1_Prescaler_F_256,
+			Timer1_Mode_4_CTC };
+	Timer1_init(&Local_timer1_Config);
+	Timer1_setCallBack(count_Seconds);
+	while (g_sec < SecDelay) {
+		LCD_moveCursor(1, 10);
+		if (g_sec == 0) {
+			LCD_displayString("  ");
+		}
+		LCD_moveCursor(1, 10);
+		LCD_intgerToString(g_sec);
+		if (g_sec == SecDelay) {
+			LCD_displayCharacter(' ');
+		}
+	}
+
+	Timer1_deInit();
+	g_sec = 0;
+}
+

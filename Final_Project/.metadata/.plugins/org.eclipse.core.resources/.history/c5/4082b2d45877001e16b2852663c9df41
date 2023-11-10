@@ -1,0 +1,18 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : global_interput_Reg.h
+ Data      : Oct 27, 2023
+ Time      : 7:30:30 PM
+ ===================================================
+ */
+
+#ifndef GLOBAL_INTERPUT_REG_H_
+#define GLOBAL_INTERPUT_REG_H_
+#include "lib/std_types.h"
+/*******************************************************************************
+ *                                Registers                                    *
+ *******************************************************************************/
+#define SREG (*(volatile uint8*)0x5F)
+
+#endif /* GLOBAL_INTERPUT_REG_H_ */

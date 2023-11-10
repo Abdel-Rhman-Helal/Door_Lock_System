@@ -1,0 +1,358 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : Control_ECU.c
+ Data      : Oct 25, 2023
+ Time      : 7:22:59 PM
+ ===================================================
+ */
+#include "twi.h"/*to comnicate with eeprom*/
+#include "external_eeprom.h"/*to save pass*/
+#include "uart.h"/*to comncate with anthor mc*/
+#include "dc_motor.h"/*to open door*/
+#include "timer1.h"/*to make delay using timer*/
+#include "buzzer.h"/*to active if pass wrong after 3 try*/
+#include <util/delay.h>/*to make delay*/
+#include "global_interput.h"/*to enable global interput*/
+/*******************************************************************************
+ *                      Definitions to control while(1)                        *
+ *******************************************************************************/
+#define CREATE_PASS 0
+#define RECREATE_PASS 1
+#define CHECK_PASS 2
+#define MOTOR_STATE 3
+#define CHANGE_PASS 4
+#define MAIN 5
+#define CONFIRMA_PASS 6
+/*******************************************************************************
+ *                      Definitions to control UART                           *
+ *******************************************************************************/
+#define UART_CREATE_PASS_READY 10
+#define UART_CREATE_PASS_YES_READY 11
+#define UART_RECREATE_PASS_READY 12
+#define UART_RECREATE_PASS_YES_READY 13
+#define UART_PASS_MATCH 14
+#define UART_PASS_MISMATCH 15
+#define UART_MOTOR_READY 16
+#define UART_MOTOR_YES_READY 17
+#define UART_CONFIRMA_PASS_READY 18
+#define UART_CONFIRMA_PASS_YES_READY 19
+#define UART_CONFIRMA_PASS_FINSH 22
+#define UART_MAIN_READY 20
+#define UART_MAIN_YES_READY 21
+#define UART_CHECK_PASS_READY 30
+#define UART_CHECK_PASS_YES_READY 31
+#define UART_CHANGE_PASS_READY 32
+#define UART_CHANGE_PASS_YES_READY 33
+/*******************************************************************************
+ *                               Global Varibales                              *
+ *******************************************************************************/
+uint8 g_sec = 0, g_try = 0, g_main = 0;
+/*******************************************************************************
+ *                              Functions Prototypes                           *
+ *******************************************************************************/
+void count_Seconds(void);
+void Delay_By_Uing_Timer1_Using_interput(uint16 SecDelay);
+/*******************************************************************************
+ *                                    main                                     *
+ *******************************************************************************/
+int main(void) {
+	/*password_counter_digit-> for loobs
+	 *state -> to control  main
+	 *password[5] -> to save pass frist time
+	 *confirmation_password[5] -> to renter pass*/
+	uint8 password_counter_digit = 0, state = CREATE_PASS;
+	boolean matched_pass_flag = 7;
+	uint8 password[5] = { 0, 0, 0, 0, 0 }, confirmation_password[5] = { 1, 1, 1,
+			1, 1 };
+	/*to Setting UART*/
+	UART_ConfigType uart_Config =
+			{ bits_8, Parity_Disabled, one_stop_bit, 9600 };
+	/*to Setting TWI*/
+	TWI_ConfigType twi_config = { 0x01, TWI_FAST_Mode, TWI_Prescaler_FCU_1 };
+	global_interput_int();
+	Buzzer_init();
+	DcMotor_Init();
+	TWI_init(&twi_config);
+	UART_init(&uart_Config);
+	LCD_init();
+	/*to make sure that the 2MC`s are realy conected*/
+	if (UART_recieveByte() == READY) {
+		UART_sendByte(IAM_READY);
+	}
+	while (1) {
+		/*******************************************************************************
+		 *                                    CREATE_PASS                              *
+		 *******************************************************************************/
+		while (state == CREATE_PASS) {
+			uint8 local_state = UART_recieveByte();/*to receive uart state */
+			g_try = 0;/*to recount try of check pass*/
+			if (local_state == UART_CREATE_PASS_READY) {
+				UART_sendByte(UART_CREATE_PASS_YES_READY);
+				/*to receive pass*/
+				for (password_counter_digit = 0; password_counter_digit < 5;
+						++password_counter_digit) {
+					password[password_counter_digit] = UART_recieveByte();
+				}
+				state = RECREATE_PASS;
+				break;
+			} else {
+				state = CREATE_PASS;
+			}
+		}
+		/*******************************************************************************
+		 *                                    RECREATE_PASS                            *
+		 *******************************************************************************/
+		while (state == RECREATE_PASS) {
+			uint8 local_state = UART_recieveByte();
+			if (local_state == UART_RECREATE_PASS_READY) {
+				UART_sendByte(UART_RECREATE_PASS_YES_READY);
+				/*to receive conf pass*/
+				for (password_counter_digit = 0; password_counter_digit < 5;
+						++password_counter_digit) {
+					confirmation_password[password_counter_digit] =
+							UART_recieveByte();
+
+				}
+				state = CONFIRMA_PASS;
+				break;
+			} else {
+				state = RECREATE_PASS;
+			}
+		}
+		/*******************************************************************************
+		 *                                    CONFIRMA_PASS                           *
+		 *******************************************************************************/
+		/*to Confirma pass and store it  in eeprom*/
+		while (state == CONFIRMA_PASS) {
+			uint8 local_state = UART_recieveByte();
+			if (local_state == UART_CONFIRMA_PASS_READY) {
+				UART_sendByte(UART_CONFIRMA_PASS_YES_READY);
+				for (password_counter_digit = 0; password_counter_digit < 5;
+						++password_counter_digit) {
+					if (password[password_counter_digit]
+							== confirmation_password[password_counter_digit]) {
+						matched_pass_flag = TRUE;
+
+					} else {
+						matched_pass_flag = FALSE;
+
+						break;
+					}
+				}
+			}
+			if (matched_pass_flag == TRUE) {
+				UART_sendByte(UART_CONFIRMA_PASS_FINSH);
+				state = MAIN;
+				/*write and read from eeprom*/
+				EEPROM_writeByte(0x0310, confirmation_password[0]);
+				_delay_ms(10);
+				EEPROM_readByte(0x0310, &confirmation_password[0]);
+				_delay_ms(10);
+				EEPROM_writeByte(0x0315, confirmation_password[1]);
+				_delay_ms(10);
+				EEPROM_readByte(0x0315, &confirmation_password[1]);
+				_delay_ms(10);
+				EEPROM_writeByte(0x0320, confirmation_password[2]);
+				_delay_ms(10);
+				EEPROM_readByte(0x0320, &confirmation_password[2]);
+				_delay_ms(10);
+				EEPROM_writeByte(0x0325, confirmation_password[3]);
+				_delay_ms(10);
+				EEPROM_readByte(0x0325, &confirmation_password[3]);
+				_delay_ms(10);
+				EEPROM_writeByte(0x0330, confirmation_password[4]);
+				_delay_ms(10);
+				EEPROM_readByte(0x0330, &confirmation_password[4]);
+				_delay_ms(10);
+				break;
+			} else {
+				UART_sendByte(UART_PASS_MISMATCH);
+				state = CREATE_PASS;/*a Pass Mismatch and go to state 1*/
+				break;
+			}
+		}
+		/*******************************************************************************
+		 *                                    MAIN_State                               *
+		 *******************************************************************************/
+		while (state == MAIN) {
+			uint8 local_state2 = 0;/*to receive uart state */
+			uint8 local_state = UART_recieveByte();/*to receive uart state */
+			g_try = 0;/*to recount try when enter wrong pass for 3 times*/
+			if (local_state == UART_MAIN_READY) {
+				UART_sendByte(UART_MAIN_YES_READY);
+				local_state2 = UART_recieveByte();
+				if (local_state2 == UART_MOTOR_READY) {
+					UART_sendByte(UART_MOTOR_YES_READY);
+					/*to save a opration and back to it after checking pass*/
+					g_main = MOTOR_STATE;
+					/*go to checking pass*/
+					state = CHECK_PASS;
+
+					break;
+				} else if (local_state2 == UART_CHECK_PASS_READY) {
+					UART_sendByte(UART_CHECK_PASS_YES_READY);
+					/*to save a opration and back to it after checking pass*/
+					g_main = CHANGE_PASS;
+					/*go to checking pass*/
+					state = CHECK_PASS;
+
+					break;
+				} else {
+					state = MAIN;/*a problem occurred and go to state 1*/
+				}
+			}
+		}
+		/*******************************************************************************
+		 *                                    MOTOR_STATE                              *
+		 *******************************************************************************/
+		while (state == MOTOR_STATE) {
+			uint8 local_state = UART_recieveByte();/*to receive uart state */
+			if (local_state == UART_MOTOR_READY) {
+				UART_sendByte(UART_MOTOR_YES_READY);
+				DcMotor_Rotate(CW, 100);
+				/*rotates motor for 15-seconds CW*/
+				Delay_By_Uing_Timer1_Using_interput(15);
+				DcMotor_Rotate(off, 0);
+				/*hold the motor for 3-seconds.*/
+				Delay_By_Uing_Timer1_Using_interput(3);
+				DcMotor_Rotate(A_CW, 100);
+				/*rotates motor for 15-seconds A-CW*/
+				Delay_By_Uing_Timer1_Using_interput(15);
+				DcMotor_Rotate(off, 0);
+				state = MAIN;/*back to main func*/
+				break;
+			} else {
+				state = MOTOR_STATE;
+			}
+		}
+		/*******************************************************************************
+		 *                                    CHECK_PASS                              *
+		 *******************************************************************************/
+		//check pass normal 3 times [done]
+		//if one passed call state of g_MAIN[done]
+		while (state == CHECK_PASS) {
+			/*to checking how many times that the pass enter
+			 *and if enter more than 3 times breaking loop and
+			 *and active buzzer for min and go to main*/
+			if (g_try == 3) {
+				Buzzer_on();
+				Delay_By_Uing_Timer1_Using_interput(60);
+				Buzzer_off();
+				state = MAIN;
+				break;
+			}
+			uint8 local_state = UART_recieveByte();/*to receive uart state */
+			if (local_state == UART_CHECK_PASS_READY) {
+				UART_sendByte(UART_CHECK_PASS_YES_READY);
+
+				/*to receive pass*/
+				for (password_counter_digit = 0; password_counter_digit < 5;
+						++password_counter_digit) {
+					password[password_counter_digit] = UART_recieveByte();
+
+				}
+				/*compere it with that in eeprom*/
+				EEPROM_readByte(0x0310, &confirmation_password[0]);
+				if (password[0] == confirmation_password[0]) {
+					_delay_ms(10);
+					EEPROM_readByte(0x0315, &confirmation_password[1]);
+					if (password[1] == confirmation_password[1]) {
+						_delay_ms(10);
+						EEPROM_readByte(0x0320, &confirmation_password[2]);
+						if (password[2] == confirmation_password[2]) {
+							_delay_ms(10);
+							EEPROM_readByte(0x0325, &confirmation_password[3]);
+							if (password[3] == confirmation_password[3]) {
+								_delay_ms(10);
+								EEPROM_readByte(0x0330,
+										&confirmation_password[4]);
+								if (password[4] == confirmation_password[4]) {
+									//that the pass match
+									UART_sendByte(UART_PASS_MATCH);
+
+									state = g_main;
+								} else {
+									UART_sendByte(UART_PASS_MISMATCH);
+									state = CHECK_PASS;
+									g_try++;
+
+									break;
+								}
+							} else {
+								UART_sendByte(UART_PASS_MISMATCH);
+								state = CHECK_PASS;
+								g_try++;
+								LCD_clearScreen();
+								LCD_displayString("-------UNmatched");
+								break;
+							}
+						} else {
+							UART_sendByte(UART_PASS_MISMATCH);
+							state = CHECK_PASS;
+							g_try++;
+							LCD_clearScreen();
+							LCD_displayString("-------UNmatched");
+							break;
+
+						}
+					} else {
+						UART_sendByte(UART_PASS_MISMATCH);
+						state = CHECK_PASS;
+						g_try++;
+						LCD_clearScreen();
+						LCD_displayString("-------UNmatched");
+						break;
+					}
+				} else {
+					UART_sendByte(UART_PASS_MISMATCH);
+					state = CHECK_PASS;
+					g_try++;
+					LCD_clearScreen();
+					LCD_displayString("-------UNmatched");
+					break;
+				}
+			} else {
+				state = CHECK_PASS;
+			}
+		}
+		/*******************************************************************************
+		 *                                    CHANGE_PASS                             *
+		 *******************************************************************************/
+		while (state == CHANGE_PASS) {
+			uint8 local_state = UART_recieveByte();/*to receive uart state */
+			if (local_state == UART_CHANGE_PASS_READY) {
+				UART_sendByte(UART_CHANGE_PASS_YES_READY);
+				state = CREATE_PASS;/*go to create pass*/
+				break;
+			} else {
+				state = CHANGE_PASS;/*a problem occurred retry itself*/
+			}
+
+		}
+	}
+}
+/*******************************************************************************
+ *                      Functions Definitions                                  *
+ *******************************************************************************/
+void count_Seconds(void) {
+	g_sec = g_sec + 1;
+}
+void Delay_By_Uing_Timer1_Using_interput(uint16 SecDelay) {
+	Timer1_setCallBack(count_Seconds);
+	/*Ttimer=256/8*1000000 = .000032sec
+	 * ocra1 = 1sec/.000032 = 31250*/
+	Timer1_ConfigType Local_timer1_Config = { 0, 31250, Timer1_Prescaler_F_256,
+			Timer1_Mode_4_CTC };
+	Timer1_init(&Local_timer1_Config);
+
+	while (g_sec < SecDelay) {
+		LCD_moveCursor(1, 0);
+		LCD_intgerToString(g_sec);
+		LCD_displayString("   ");
+	}
+
+	Timer1_deInit();
+	g_sec = 0;
+}
+

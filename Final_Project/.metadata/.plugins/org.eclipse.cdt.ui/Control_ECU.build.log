@@ -1,0 +1,34 @@
+15:15:46 **** Incremental Build of configuration Debug for project Control_ECU ****
+make all 
+Building file: ../mcal/pwm/pwm.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=8000000UL -MMD -MP -MF"mcal/pwm/pwm.d" -MT"mcal/pwm/pwm.o" -c -o "mcal/pwm/pwm.o" "../mcal/pwm/pwm.c"
+Finished building: ../mcal/pwm/pwm.c
+ 
+Building target: Control_ECU.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Control_ECU.map -mmcu=atmega32 -o "Control_ECU.elf"  ./mcal/uart/uart.o  ./mcal/twi/twi.o  ./mcal/timer1/timer1.o  ./mcal/pwm/pwm.o  ./mcal/gpio/gpio.o  ./mcal/global_interput/global_interput.o  ./hal/eeprom/external_eeprom.o  ./hal/dcmotor/dc_motor.o  ./hal/buzzer/buzzer.o  ./app/Control_ECU.o   
+Finished building target: Control_ECU.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Control_ECU.elf  >"Control_ECU.lss"
+Finished building: Control_ECU.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 Control_ECU.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   15142 bytes (46.2% Full)
+(.text + .data + .bootloader)
+
+Data:        291 bytes (14.2% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+
+15:15:47 Build Finished. 0 errors, 0 warnings. (took 751ms)
+

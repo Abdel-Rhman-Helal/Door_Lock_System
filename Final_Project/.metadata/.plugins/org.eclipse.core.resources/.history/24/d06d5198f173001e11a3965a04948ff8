@@ -1,0 +1,132 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : Control_ECU.c
+ Data      : Oct 25, 2023
+ Time      : 7:22:59 PM
+ ===================================================
+ */
+#include "twi.h"
+#include "external_eeprom.h"
+#include "uart.h"
+#include "lcd.h"
+#include <util/delay.h>
+#define MATCHED_PASS 0x04
+#define UNMATCHED_PASS 0x05
+int main(void) {
+	uint8 password_counter_digit = 0, pass_or_repass_flag = 0, changPass_flag =
+			1, pass_enter_count = 0;
+	boolean matched_pass_flag = 7;
+	uint32 f_password = 0, p_password = 125;
+	uint8 password[5] = { 0, 0, 0, 0, 0 }, confirmation_password[5] = { 1, 1, 1,
+			1, 1 };
+	UART_ConfigType uart_Config =
+			{ bits_8, Parity_Disabled, one_stop_bit, 9600 };
+	TWI_ConfigType twi_config = { 0x01, TWI_NORMAL_Mode, TWI_Prescaler_FCU_1 };
+	TWI_init(&twi_config);
+	UART_init(&uart_Config);
+	LCD_init();
+	if (UART_recieveByte() == READY) {
+		UART_sendByte(IAM_READY);
+	}
+	while (1) {
+		while (password_counter_digit < 5 && pass_or_repass_flag == 0) {
+			password[password_counter_digit] = (UART_recieveByte());
+			f_password = (f_password * 10) + password[password_counter_digit];
+			LCD_intgerToString(password[password_counter_digit]);
+			password_counter_digit++;
+		}
+		if (password_counter_digit == 5) {
+			pass_enter_count++;
+			password_counter_digit = 0;
+			pass_or_repass_flag = 1;
+		}
+		while (password_counter_digit < 5 && pass_or_repass_flag == 1) {
+			confirmation_password[password_counter_digit] =
+					(UART_recieveByte());
+			p_password = (p_password * 10)
+					+ confirmation_password[password_counter_digit];
+			LCD_intgerToString(confirmation_password[password_counter_digit]);
+			password_counter_digit++;
+			if (password_counter_digit == 4) {
+				pass_enter_count++;
+			}
+		}
+		if (pass_enter_count == 2) {
+			for (password_counter_digit = 0;
+					password_counter_digit < 5 && pass_enter_count == 2;
+					++password_counter_digit) {
+				if (password[password_counter_digit]
+						== confirmation_password[password_counter_digit]) {
+					matched_pass_flag = TRUE;
+					LCD_clearScreen();
+					LCD_displayString("matched");
+					_delay_ms(100);
+				} else {
+					matched_pass_flag = FALSE;
+					password_counter_digit = 0;
+					pass_or_repass_flag = 0;
+					LCD_clearScreen();
+					LCD_displayString("UNmatched");
+					_delay_ms(100);
+					break;
+				}
+			}
+			pass_enter_count = 0;
+		}
+		if (matched_pass_flag == TRUE) {
+			EEPROM_writeByte(0x0310, confirmation_password[0]);
+			_delay_ms(10);
+			EEPROM_readByte(0x0310, &confirmation_password[0]);
+			_delay_ms(10);
+			EEPROM_writeByte(0x0315, confirmation_password[1]);
+			_delay_ms(10);
+			EEPROM_readByte(0x0315, &confirmation_password[1]);
+			_delay_ms(10);
+			EEPROM_writeByte(0x0320, confirmation_password[2]);
+			_delay_ms(10);
+			EEPROM_readByte(0x0320, &confirmation_password[2]);
+			_delay_ms(10);
+			EEPROM_writeByte(0x0325, confirmation_password[3]);
+			_delay_ms(10);
+			EEPROM_readByte(0x0325, &confirmation_password[3]);
+			_delay_ms(10);
+			EEPROM_writeByte(0x0330, confirmation_password[4]);
+			_delay_ms(10);
+			EEPROM_readByte(0x0330, &confirmation_password[4]);
+			_delay_ms(10);
+			UART_sendByte(MATCHED_PASS);
+			pass_or_repass_flag = 2;
+			password_counter_digit = 0;
+		} else if (matched_pass_flag == FALSE) {
+			UART_sendByte(UNMATCHED_PASS);
+			password_counter_digit = 0;
+			pass_or_repass_flag = 0;
+		}
+
+		if (password_counter_digit < 5 && pass_or_repass_flag == 2) {
+			password[password_counter_digit] = (UART_recieveByte());
+			LCD_intgerToString(password[password_counter_digit]);
+			password_counter_digit++;
+			p_password = (p_password * 10) + password[password_counter_digit];
+			changPass_flag = 1;
+		}
+		if (changPass_flag == 1) {
+			if (password[0] == *(0x0310)) {
+				if (password[1] == *(0x0315)) {
+					if (password[2] == *(0x0320)) {
+						if (password[3] == *(0x0325)) {
+							if (password[4] == *(0x0330)) {
+
+							}
+						}
+					}
+				}
+			} else {
+				UART_sendByte(UNMATCHED_PASS);
+			}
+		}
+
+	}
+}
+

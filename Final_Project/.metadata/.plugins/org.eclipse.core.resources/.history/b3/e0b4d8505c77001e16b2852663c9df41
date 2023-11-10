@@ -1,0 +1,70 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : timer1.h
+ Data      : Oct 23, 2023
+ Time      : 12:14:54 PM
+ ===================================================
+ */
+
+#ifndef MCAL_TIMER1_TIMER1_H_
+#define MCAL_TIMER1_TIMER1_H_
+#include "lib/std_types.h"
+/*******************************************************************************
+ *                             Definitions                                      *
+ *******************************************************************************/
+#define NO_COMPARE_MODE -1
+
+/*******************************************************************************
+ *                               Types Declaration                             *
+ *******************************************************************************/
+typedef enum {
+	Timer1_Prescaler_No_clock,
+	Timer1_Prescaler_F_1,
+	Timer1_Prescaler_F_8,
+	Timer1_Prescaler_F_64,
+	Timer1_Prescaler_F_256,
+	Timer1_Prescaler_F_1024,
+	Timer1_Prescaler_External_clock_falling_edge,
+	Timer1_Prescaler_External_clock_rising_edge
+} Timer1_Prescaler;
+typedef enum {
+	Timer1_Mode_0_Normal,
+	Timer1_Mode_1_PWM_Phase_Correct_8bit,
+	Timer1_Mode_2_PWM_Phase_Correct_9bit,
+	Timer1_Mode_3_PWM_Phase_Correct_10bit,
+	Timer1_Mode_4_CTC,
+	Timer1_Mode_5_Fast_PWM_8bit,
+	Timer1_Mode_6_Fast_PWM_9bit,
+	Timer1_Mode_7_Fast_PWM_10bit,
+	Timer1_Mode_8_PWM_Phase_and_Frequency,
+	Timer1_Mode_9_PWM_Phase_and_Frequency,
+	Timer1_Mode_10_PWM_Phase_Correct,
+	Timer1_Mode_11_PWM_Phase_Correct,
+	Timer1_Mode_12_CTC,
+	Timer1_Mode_13_Reserved,
+	Timer1_Mode_14_Fast_PWM,
+	Timer1_Mode_15_Fast_PWM,
+} Timer1_Mode;
+
+typedef struct {
+	uint16 initial_value;
+	uint16 compare_value; // it will be used in compare mode only else pass a NO_COMPARE_MODE.
+	Timer1_Prescaler prescaler;
+	Timer1_Mode mode;
+} Timer1_ConfigType;
+/*******************************************************************************
+ *                              Functions Prototypes                           *
+ *******************************************************************************/
+
+/* Description
+ Function to initialize the Timer driver */
+void Timer1_init(const Timer1_ConfigType *Config_Ptr);
+/*Description
+ Function to disable the Timer1.*/
+void Timer1_deInit(void);
+/*Description
+ Function to set the Call Back function address.*/
+void Timer1_setCallBack(void (*a_ptr)(void));
+
+#endif /* MCAL_TIMER1_TIMER1_H_ */

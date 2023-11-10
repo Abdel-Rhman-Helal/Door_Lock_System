@@ -1,0 +1,81 @@
+/*
+ ===================================================
+ Author    : Abdel Rhman Helal Saleh
+ File Name : timer1.h
+ Data      : Oct 23, 2023
+ Time      : 12:04:33 PM
+ ===================================================
+ */
+
+#ifndef MCAL_TIMER1_TIMER1_REG_H_
+#define MCAL_TIMER1_TIMER1_REG_H_
+#include "../../lib/std_types.h"
+/*******************************************************************************
+ *                                Registers                                    *
+ *******************************************************************************/
+typedef union {
+	uint8 Byte;
+	struct {
+		uint8 WGM10_BIT :1;
+		uint8 WGM11_BIT :1;
+		uint8 FOC1A_BIT :1;
+		uint8 FOC1B_BIT :1;
+		uint8 COM1B0_BIT :1;
+		uint8 COM1B1_BIT :1;
+		uint8 COM1A0_BIT :1;
+		uint8 COM1A1_BIT :1;
+	} Bits;
+} Timer1_TCCR1A_Type;
+
+typedef union {
+	uint8 Byte;
+	struct {
+		uint8 CS10_11_12_BITS :3;
+		uint8 WGM12_BIT :1;
+		uint8 WGM13_BIT :1;
+		uint8 :1;
+		uint8 ICES1_BIT :1;
+		uint8 ICNC1_BIT :1;
+	} Bits;
+} Timer1_TCCR1B_Type;
+
+typedef union {
+	uint8 Byte;
+	struct {
+		uint8 TOIE0_BIT :1;
+		uint8 OCIE0_BIT :1;
+		uint8 TOIE1_BIT :1;
+		uint8 OCIE1B_BIT :1;
+		uint8 OCIE1A_BIT :1;
+		uint8 TICIE1_BIT :1;
+		uint8 TOIE2_BIT :1;
+		uint8 OCIE2_BIT :1;
+	} Bits;
+} Timers_TIMSK_Type;
+
+typedef union {
+	uint8 Byte;
+	struct {
+		uint8 TOV0_BIT :1;
+		uint8 OCF0_BIT :1;
+		uint8 TOV1_BIT :1;
+		uint8 OCF1B_BIT :1;
+		uint8 OCF1A_BIT :1;
+		uint8 ICF1_BIT :1;
+		uint8 TOV2_BIT :1;
+		uint8 OCF2_BIT :1;
+	} Bits;
+} Timers_TIFR_Type;
+/*******************************************************************************
+ *                             Definitions                                      *
+ *******************************************************************************/
+#define TCNT1_REG     (*(volatile uint16*)0x4C)
+#define TCCR1A_REG    (*(volatile Timer1_TCCR1A_Type*)0x4F)
+#define TCCR1B_REG    (*(volatile Timer1_TCCR1B_Type*)0x4E)
+#define TIFR_REG      (*(volatile Timers_TIFR_Type*)0x58)
+#define TIMSK_REG     (*(volatile Timers_TIMSK_Type*)0x59)
+#define OCR1A_REG     (*(volatile uint16*)0x4A)
+#define OCR1B_REG     (*(volatile uint16*)0x48)
+#define ICR1_REG      (*(volatile uint16*)0x46)
+
+#endif /* MCAL_TIMER1_TIMER1_REG_H_ */
